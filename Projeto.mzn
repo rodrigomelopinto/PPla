@@ -5,7 +5,7 @@ include "scenario.dzn";
 int: n_agents;
 int: n_edges;
 int: n_vertices;
-int: makespan = 20;
+int: makespan = 13;
 
 set of int: AgentsRange = 1..n_agents;
 set of int: MakespanRange = 1..makespan;
@@ -20,18 +20,24 @@ array[1..n_agents] of int: goal;
 
 array[1..makespan,1..n_agents] of var 1..n_vertices: pos;
 
+constraint pos[1,..] == start;
+constraint pos[makespan,..] == goal;
+
+%constraint
+  %exists(i in MakespanRange) (
+   % pos[i,..] == goal
+  %);
 
 constraint forall(i in MakespanRange)(
                                     alldifferent([pos[i,j]| j in AgentsRange]));
-constraint pos[1,..] == start;
 
 constraint forall(i in MakespanRange)(
-              forall(j in AgentsRange)(if i != 1 then exists(e in EdgesRange)(edges[e,..] == [pos[i,j],pos[i-1,j]] \/ edges[e,..] ==                             [pos[i-1,j],pos[i,j]]) \/ pos[i,j] == pos[i-1,j] endif));
-
-constraint
-  exists(i in MakespanRange) (
-    pos[i,..] == goal
-  );
+              forall(j in AgentsRange)(if i != 1 then exists(e in EdgesRange)(edges[e,..] == [pos[i,j],pos[i-1,j]] \/ edges[e,..] ==       [pos[i-1,j],pos[i,j]]) \/ pos[i,j] == pos[i-1,j] endif /\
+if i != 1 /\ pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif));
+              
+%constraint forall(i in MakespanRange)(
+              %forall(j in AgentsRange)(if i != 1 /\ pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif));
+              
 
 solve satisfy;
 
