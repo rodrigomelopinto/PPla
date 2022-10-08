@@ -1,5 +1,6 @@
 import sys
-#from minizinc import Instance, Model, Solver
+from minizinc import Instance, Model, Solver
+import minizinc
 
 def get_bounds(gr, st, go):
     max = 0
@@ -13,7 +14,6 @@ def get_bounds(gr, st, go):
         if st[j] == go[j]:
             if(max < len(paths)):
                 max = len(paths)
-            print("ola")
             sum = sum + len(paths)
             j+=1
             continue
@@ -24,7 +24,6 @@ def get_bounds(gr, st, go):
             
             if go[j] in next_vertices:
                 curr_path.append(go[j])
-                print(curr_path)
                 if(max < len(curr_path)):
                     max = len(curr_path)
                 sum = sum + len(curr_path)
@@ -146,7 +145,6 @@ scenarioString = scenarioString + "];"
 bounds = get_bounds(g,start,goal)
 if(n_vertices - n_agents <= 2):
     bounds[1] = bounds[1]*2
-print(bounds)
 graphString = graphString + "lower_bound = " + str(bounds[0]) + ";\n"
 graphString = graphString + "upper_bound = " + str(bounds[1]) + ";\n"
 
@@ -158,14 +156,25 @@ scenariofile.close()
 graph.close()
 scenario.close()
 
-'''
-# Load n-Queens model from file
 mapf = Model("./Projeto.mzn")
-# Find the MiniZinc solver configuration for Gecode
-gecode = Solver.lookup("gecode")
-# Create an Instance of the n-Queens model for Gecode
-instance = Instance(gecode, mapf)
+
+chuffed = Solver.lookup("chuffed")
+
+instance = Instance(chuffed, mapf)
 
 result = instance.solve()
-# Output the array q
-print(result["q"])'''
+
+i=0
+res = ""
+while i < result["makespan"]:
+    res = res + "i=" + str(i) + "    "
+    agent = 0
+    while agent < n_agents:
+        if(agent == n_agents - 1):
+            res = res + str(agent+1) + ":" + str(result["pos"][i][agent]) + "\n"
+        else:
+            res = res + str(agent+1) + ":" + str(result["pos"][i][agent]) + " "
+        agent +=1
+    i+=1
+    
+print(res)
