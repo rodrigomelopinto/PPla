@@ -27,7 +27,7 @@ constraint forall(i in 1..makespan)(alldifferent([pos[i,j]| j in AgentsRange]) /
               forall(j in AgentsRange)(if i != 1 then exists(e in EdgesRange)(edges[e,..] == [pos[i,j],pos[i-1,j]] \/ edges[e,..] ==       [pos[i-1,j],pos[i,j]]) \/ pos[i,j] == pos[i-1,j] endif /\
 if i != 1 /\ pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif));
               
-solve minimize makespan;
+solve ::int_search([makespan],first_fail,indomain_min) minimize makespan;
 
 
 

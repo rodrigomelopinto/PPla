@@ -1,6 +1,5 @@
 import sys
 from minizinc import Instance, Model, Solver
-import minizinc
 
 def get_bounds(gr, st, go):
     max = 0
@@ -144,7 +143,9 @@ scenarioString = scenarioString + "];"
 
 bounds = get_bounds(g,start,goal)
 if(n_vertices - n_agents <= 2):
+    bounds[0] = bounds[1]
     bounds[1] = bounds[1]*2
+print(bounds)
 graphString = graphString + "lower_bound = " + str(bounds[0]) + ";\n"
 graphString = graphString + "upper_bound = " + str(bounds[1]) + ";\n"
 
