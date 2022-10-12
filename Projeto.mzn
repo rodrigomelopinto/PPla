@@ -5,29 +5,28 @@ include "scenario.dzn";
 int: n_agents;
 int: n_edges;
 int: n_vertices;
-int: upper_bound;
-int: lower_bound;
-var lower_bound..upper_bound: makespan;
+int: makespan;
+int: max_adj;
 
 set of int: AgentsRange = 1..n_agents;
 set of int: EdgesRange = 1..n_edges;
 
 array[1..n_edges,1..2] of int: edges;
+array[1..n_vertices,1..max_adj] of int: adj;
 
 array[1..n_agents] of int: start;
 array[1..n_agents] of int: goal;
 
-array[1..upper_bound,1..n_agents] of var 1..n_vertices: pos;
+array[1..makespan,1..n_agents] of var 1..n_vertices: pos;
 
 constraint pos[1,..] == start;
 
-constraint forall(i in makespan..upper_bound)(pos[i,..] == goal);
+constraint pos[makespan,..] == goal;
 
-constraint forall(i in 1..makespan)(alldifferent([pos[i,j]| j in AgentsRange]) /\
-              forall(j in AgentsRange)(if i != 1 then exists(e in EdgesRange)(edges[e,..] == [pos[i,j],pos[i-1,j]] \/ edges[e,..] ==       [pos[i-1,j],pos[i,j]]) \/ pos[i,j] == pos[i-1,j] endif /\
-if i != 1 /\ pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif));
-              
-solve ::int_search([makespan],first_fail,indomain_min) minimize makespan;
+constraint forall(i in 2..makespan)(alldifferent([pos[i,j]| j in AgentsRange]) /\
+              forall(j in AgentsRange)(pos[i,j] == pos[i-1,j] \/ exists(v in 1..max_adj)(adj[pos[i-1,j],v] == pos[i,j]) /\ if pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif));
+  
+solve satisfy;
 
 
 

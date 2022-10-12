@@ -50,6 +50,7 @@ while(c[0] == '#'):
 
 n_vertices = int(c)
 g = {}
+
 i=1
 while i <= n_vertices:
     g[str(i)] = []
@@ -120,6 +121,7 @@ scenarioString = scenarioString + "];\n"
 
 scenariofile.readline()
 goal = []
+int_goal = []
 i = 0
 scenarioString = scenarioString + "goal = ["
 while(i < n_agents):
@@ -138,6 +140,7 @@ while(i < n_agents):
         scenarioString = scenarioString + g2
     i+=1
     goal = goal + [g2]
+    int_goal = int_goal + [int(g2)]
 
 scenarioString = scenarioString + "];"
 
@@ -146,9 +149,37 @@ if(n_vertices - n_agents <= 2):
     bounds[0] = bounds[1]
     bounds[1] = bounds[1]*2
 print(bounds)
-graphString = graphString + "lower_bound = " + str(bounds[0]) + ";\n"
-graphString = graphString + "upper_bound = " + str(bounds[1]) + ";\n"
+#graphString = graphString + "lower_bound = " + str(bounds[0]) + ";\n"
+#graphString = graphString + "upper_bound = " + str(bounds[1]) + ";\n"
 
+maxlen = 0
+for v in g: 
+    if(maxlen < len(g[v])):
+        maxlen = len(g[v])
+str_adj = "adj = ["
+for v in g:
+    str_adj = str_adj + "|"
+    i=0
+    while i < len(g[v]):
+        if(len(g[v])==maxlen):
+            if(i < maxlen - 1):
+                str_adj = str_adj + g[v][i] + ","
+            else:
+                str_adj = str_adj + g[v][i] + "\n"
+        else:
+            str_adj = str_adj + g[v][i] + ","
+        i+=1
+    while i < maxlen:
+        if(i < maxlen - 1):
+            str_adj = str_adj + "0,"
+        else:
+             str_adj = str_adj + "0\n"
+        i+=1
+
+str_adj = str_adj + "|];\n"
+graphString = graphString + str_adj
+graphString = graphString + "max_adj = " + str(maxlen) +";\n"
+    
 graph.write(graphString)
 scenario.write(scenarioString)
 
@@ -161,13 +192,25 @@ mapf = Model("./Projeto.mzn")
 
 chuffed = Solver.lookup("chuffed")
 
-instance = Instance(chuffed, mapf)
+makespan = bounds[0]
+while makespan <= bounds[1]:
+    instance = Instance(chuffed, mapf)
+    instance["makespan"] = makespan
+    result = instance.solve()
+    makespan += 1
+    string = str(result.solution)
 
-result = instance.solve()
+    if(string == "None"):
+        continue
+    #print("makespan-",makespan-1, "isto-",result["pos"][-1],"goal-",int_goal)
+    if(result["pos"][-1] == int_goal):
+        #print("aqui")
+        break
 
 i=0
 res = ""
-while i < result["makespan"]:
+makespan = makespan - 1
+while i < makespan:
     res = res + "i=" + str(i) + "    "
     agent = 0
     while agent < n_agents:
