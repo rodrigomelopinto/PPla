@@ -58,12 +58,12 @@ while i <= n_vertices:
 n_edges = int(graphfile.readline())
 
 graphString = "n_vertices = " + str(n_vertices) + ";\n"
-graphString = graphString + "n_edges = " + str(n_edges) + ";\n"
+#graphString = graphString + "n_edges = " + str(n_edges) + ";\n"
 
 adj = []
 
 i=0
-graphString = graphString + "edges = ["
+#graphString = graphString + "edges = ["
 while(i < n_edges):
     s_edge = graphfile.readline()
     j=0
@@ -78,10 +78,10 @@ while(i < n_edges):
         j += 1
 
     adj = adj + [[e1,e2]]
-    graphString = graphString + "|" + e1 + "," + e2 + "\n"
+    #graphString = graphString + "|" + e1 + "," + e2 + "\n"
     i+=1
 
-graphString = graphString + "|];\n"
+#graphString = graphString + "|];\n"
 
 for i in range(len(adj)):
     g[str(adj[i][0])]= g[str(adj[i][0])] + [adj[i][1]]
@@ -192,7 +192,7 @@ mapf = Model("./Projeto.mzn")
 
 chuffed = Solver.lookup("chuffed")
 
-makespan = bounds[0]
+makespan = 23
 while makespan <= bounds[1]:
     instance = Instance(chuffed, mapf)
     instance["makespan"] = makespan

@@ -3,15 +3,14 @@ include "graph.dzn";
 include "scenario.dzn";
 
 int: n_agents;
-int: n_edges;
 int: n_vertices;
 int: makespan;
 int: max_adj;
 
 set of int: AgentsRange = 1..n_agents;
-set of int: EdgesRange = 1..n_edges;
+set of int: TimeRange = 2..makespan;
+set of int: AdjRange = 1..max_adj;
 
-array[1..n_edges,1..2] of int: edges;
 array[1..n_vertices,1..max_adj] of int: adj;
 
 array[1..n_agents] of int: start;
@@ -23,8 +22,9 @@ constraint pos[1,..] == start;
 
 constraint pos[makespan,..] == goal;
 
-constraint forall(i in 2..makespan)(alldifferent([pos[i,j]| j in AgentsRange]) /\
-              forall(j in AgentsRange)(pos[i,j] == pos[i-1,j] \/ exists(v in 1..max_adj)(adj[pos[i-1,j],v] == pos[i,j]) /\ if pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif));
+constraint forall(i in TimeRange)(alldifferent([pos[i,j]| j in AgentsRange]));
+
+constraint forall(i in TimeRange, j in AgentsRange)(pos[i,j] == pos[i-1,j] \/ exists(v in AdjRange)(adj[pos[i-1,j],v] == pos[i,j]) /\ if pos[i,j] != pos[i-1,j] then not(exists(p in [pos[i-1,z]|z in AgentsRange])(pos[i,j] == p)) endif);
   
 solve satisfy;
 
