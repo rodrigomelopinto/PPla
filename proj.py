@@ -192,7 +192,7 @@ mapf = Model("./Projeto.mzn")
 
 chuffed = Solver.lookup("chuffed")
 
-makespan = 23
+makespan = bounds[0]
 while makespan <= bounds[1]:
     instance = Instance(chuffed, mapf)
     instance["makespan"] = makespan
