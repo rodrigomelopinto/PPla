@@ -1,42 +1,70 @@
 import sys
 from minizinc import Instance, Model, Solver
 
-def get_bounds(gr, st, go):
+dists = {}
+
+def get_dists(gr, go,vert,n):
     max = 0
     sum = 0
     j=0
-    while(j < len(st)):
-        path_ind = 0
-        visited = {st[j]}
-        paths = [[st[j]]]
+    while(j < len(vert)):
+        i=0
+        while(i<len(go)):
+            flag = 0
+            path_ind = 0
+            visited = {vert[j]}
+            paths = [[vert[j]]]
 
-        if st[j] == go[j]:
-            if(max < len(paths)):
-                max = len(paths)
-            sum = sum + len(paths)
-            j+=1
-            continue
-            
-        while path_ind < len(paths):
-            curr_path = paths[path_ind]
-            next_vertices = gr[curr_path[-1]]
-            
-            if go[j] in next_vertices:
-                curr_path.append(go[j])
-                if(max < len(curr_path)):
-                    max = len(curr_path)
-                sum = sum + len(curr_path)
-                break
-    
-            for next_vertice in next_vertices:
-                if not next_vertice in visited:
-                    new_path = curr_path[:]
-                    new_path.append(next_vertice)
-                    paths.append(new_path)
-                    visited.add(next_vertice)
-            
-            path_ind += 1
+            if vert[j] == go[i]:
+                #if(max < len(paths)):
+                #    max = len(paths)
+                #sum = sum + len(paths)
+                dists[j+1].append(len(paths))
+                flag = 1
+                i+=1
+                continue
+                
+            while path_ind < len(paths):
+                curr_path = paths[path_ind]
+                #print(curr_path[-1])
+                #print(gr)
+                next_vertices = gr[curr_path[-1]]
+                
+                if go[i] in next_vertices:
+                    curr_path.append(go[i])
+                    #if(max < len(curr_path)):
+                        #max = len(curr_path)
+                    #sum = sum + len(curr_path)
+                    flag = 1
+                    dists[j+1].append(len(curr_path))
+                    break
+        
+                for next_vertice in next_vertices:
+                    if not next_vertice in visited:
+                        new_path = curr_path[:]
+                        new_path.append(next_vertice)
+                        paths.append(new_path)
+                        visited.add(next_vertice)
+                
+                path_ind += 1
+            i += 1 
+            if(flag == 0):
+                dists[j+1].append(n)
         j+=1
+
+def get_bounds(st):
+    i=0
+    max = 0
+    sum = 0
+    #print(len(dists))
+    while(i < len(st)):
+        #print(st[i])
+        #print(dists[int(st[i])])
+        #print(i)
+        if(max < dists[int(st[i])][i]):
+            max = dists[int(st[i])][i]
+        sum = sum + dists[int(st[i])][i]
+        i += 1
     return [max,sum]
 
 graphfile = open(sys.argv[1],"r")
@@ -143,12 +171,21 @@ while(i < n_agents):
     int_goal = int_goal + [int(g2)]
 
 scenarioString = scenarioString + "];"
-
-bounds = get_bounds(g,start,goal)
+i=1
+v = []
+while(i <= n_vertices):
+    dists[i] = []
+    v = v +[str(i)]
+    i+=1
+#print(v)
+get_dists(g,goal,v,n_vertices)
+#print(dists)
+bounds = get_bounds(start)
+#print(bounds)
 if(n_vertices - n_agents <= 2):
     bounds[0] = bounds[1]
     bounds[1] = bounds[1]*2
-print(bounds)
+#print(bounds)
 #graphString = graphString + "lower_bound = " + str(bounds[0]) + ";\n"
 #graphString = graphString + "upper_bound = " + str(bounds[1]) + ";\n"
 
@@ -179,7 +216,21 @@ for v in g:
 str_adj = str_adj + "|];\n"
 graphString = graphString + str_adj
 graphString = graphString + "max_adj = " + str(maxlen) +";\n"
-    
+
+str_dist = "dist = ["
+for vert in dists:
+    str_dist = str_dist + "|"
+    i = 0
+    while(i < len(dists[vert])):
+        if(i < len(dists[vert]) - 1):
+            str_dist = str_dist + str(dists[vert][i]) + ","
+        else:
+            str_dist = str_dist + str(dists[vert][i]) +"\n"
+        i = i + 1
+
+str_dist = str_dist + "|];"
+
+graphString = graphString + str_dist 
 graph.write(graphString)
 scenario.write(scenarioString)
 
@@ -187,6 +238,8 @@ graphfile.close()
 scenariofile.close()
 graph.close()
 scenario.close()
+
+#print(dists)
 
 mapf = Model("./Projeto.mzn")
 
