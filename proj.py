@@ -16,9 +16,6 @@ def get_dists(gr, go,vert,n):
             paths = [[vert[j]]]
 
             if vert[j] == go[i]:
-                #if(max < len(paths)):
-                #    max = len(paths)
-                #sum = sum + len(paths)
                 dists[j+1].append(len(paths))
                 flag = 1
                 i+=1
@@ -26,15 +23,10 @@ def get_dists(gr, go,vert,n):
                 
             while path_ind < len(paths):
                 curr_path = paths[path_ind]
-                #print(curr_path[-1])
-                #print(gr)
                 next_vertices = gr[curr_path[-1]]
                 
                 if go[i] in next_vertices:
                     curr_path.append(go[i])
-                    #if(max < len(curr_path)):
-                        #max = len(curr_path)
-                    #sum = sum + len(curr_path)
                     flag = 1
                     dists[j+1].append(len(curr_path))
                     break
@@ -56,11 +48,7 @@ def get_bounds(st):
     i=0
     max = 0
     sum = 0
-    #print(len(dists))
     while(i < len(st)):
-        #print(st[i])
-        #print(dists[int(st[i])])
-        #print(i)
         if(max < dists[int(st[i])][i]):
             max = dists[int(st[i])][i]
         sum = sum + dists[int(st[i])][i]
@@ -86,12 +74,9 @@ while i <= n_vertices:
 n_edges = int(graphfile.readline())
 
 graphString = "n_vertices = " + str(n_vertices) + ";\n"
-#graphString = graphString + "n_edges = " + str(n_edges) + ";\n"
 
 adj = []
-
 i=0
-#graphString = graphString + "edges = ["
 while(i < n_edges):
     s_edge = graphfile.readline()
     j=0
@@ -106,10 +91,7 @@ while(i < n_edges):
         j += 1
 
     adj = adj + [[e1,e2]]
-    #graphString = graphString + "|" + e1 + "," + e2 + "\n"
     i+=1
-
-#graphString = graphString + "|];\n"
 
 for i in range(len(adj)):
     g[str(adj[i][0])]= g[str(adj[i][0])] + [adj[i][1]]
@@ -177,17 +159,14 @@ while(i <= n_vertices):
     dists[i] = []
     v = v +[str(i)]
     i+=1
-#print(v)
+
 get_dists(g,goal,v,n_vertices)
-#print(dists)
+
 bounds = get_bounds(start)
-#print(bounds)
+
 if(n_vertices - n_agents <= 2):
     bounds[0] = bounds[1]
     bounds[1] = bounds[1]*2
-#print(bounds)
-#graphString = graphString + "lower_bound = " + str(bounds[0]) + ";\n"
-#graphString = graphString + "upper_bound = " + str(bounds[1]) + ";\n"
 
 maxlen = 0
 for v in g: 
@@ -239,8 +218,6 @@ scenariofile.close()
 graph.close()
 scenario.close()
 
-#print(dists)
-
 mapf = Model("./Projeto.mzn")
 
 chuffed = Solver.lookup("chuffed")
@@ -255,9 +232,7 @@ while makespan <= bounds[1]:
 
     if(string == "None"):
         continue
-    #print("makespan-",makespan-1, "isto-",result["pos"][-1],"goal-",int_goal)
     if(result["pos"][-1] == int_goal):
-        #print("aqui")
         break
 
 i=0
